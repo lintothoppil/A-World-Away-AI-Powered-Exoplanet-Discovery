@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NASA Exoplanet Classification System</title>
+    <meta name="description" content="Professional exoplanet classification system for NASA Space Apps Challenge">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'nasa-blue': '#0B3D91',
+                        'nasa-red': '#FC3D21',
+                        'nasa-dark': '#1a1a2e',
+                        'nasa-light': '#16213e'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    
+    <!-- Meta tags for SEO and social sharing -->
+    <meta property="og:title" content="NASA Exoplanet Classification System">
+    <meta property="og:description" content="Advanced machine learning system for exoplanet classification using K2, TESS, and KOI datasets">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="keywords" content="NASA, exoplanet, classification, machine learning, space, astronomy">
+    <meta name="author" content="NASA Space Apps Challenge Team">
+    
+</head>
+<body class="bg-gradient-to-br from-nasa-dark via-nasa-light to-gray-900 min-h-screen text-white" role="main">
+    <!-- Skip to main content link for accessibility -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-nasa-red text-white px-4 py-2 rounded-lg z-50">Skip to main content</a>
+    
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-nasa-blue via-nasa-dark to-nasa-blue bg-opacity-95 backdrop-blur-md border-b-2 border-nasa-red border-opacity-40 sticky top-0 z-50 shadow-2xl" role="banner">
+        <div class="container mx-auto px-3 py-3">
+            <div class="flex flex-col lg:flex-row items-center justify-between">
+                <!-- Logo and Title Section -->
+                <div class="flex items-center space-x-3 mb-3 lg:mb-0">
+                    <div class="relative">
+                        <div class="bg-gradient-to-br from-nasa-red to-red-600 p-2 rounded-lg shadow-lg transform rotate-3 hover:rotate-0 transition-transform duration-300">
+                            <i class="fas fa-rocket text-lg text-white"></i>
+                        </div>
+                        <div class="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-lg"></div>
+                    </div>
+                    <div class="text-center lg:text-left">
+                        <h1 class="text-lg font-bold text-white mb-1 tracking-wide">
+                            <span class="bg-gradient-to-r from-white via-blue-200 to-white bg-clip-text text-transparent">
+                                NASA Exoplanet Classifier
+                            </span>
+                        </h1>
+                        <p class="text-blue-200 text-xs font-medium">Space Apps Challenge 2025</p>
+                        <p class="text-gray-300 text-xs mt-1">Advanced Machine Learning for Exoplanet Discovery</p>
+                    </div>
+                </div>
+                
+                <!-- Controls Section -->
+                <div class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-3">
+                    <!-- Dataset Selector -->
+                    <div class="flex flex-col items-center sm:items-start">
+                        <label for="dataset-select" class="text-xs font-bold text-blue-200 mb-1 uppercase tracking-wide">Mission Dataset</label>
+                        <select id="dataset-select" class="bg-nasa-dark border border-nasa-red border-opacity-40 rounded-lg px-3 py-2 text-white font-bold focus:outline-none focus:ring-1 focus:ring-nasa-red focus:ring-opacity-60 focus:border-nasa-red transition-all duration-300 hover:border-opacity-60 shadow-lg text-sm">
+                            <option value="k2">🛰️ K2 Mission</option>
+                            <option value="tess">🔭 TESS Mission</option>
+                            <option value="koi">⭐ Kepler Objects of Interest</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Status Indicator -->
+                    <div class="flex flex-col items-center sm:items-start">
+                        <label class="text-xs font-bold text-blue-200 mb-1 uppercase tracking-wide">System Status</label>
+                        <div class="flex items-center space-x-2 bg-nasa-dark bg-opacity-50 px-3 py-2 rounded-lg border border-green-400 border-opacity-30">
+                            <div id="status-indicator" class="w-3 h-3 bg-green-400 rounded-full animate-pulse shadow-lg" aria-hidden="true"></div>
+                            <span class="text-green-400 font-bold text-xs uppercase tracking-wide">Online</span>
+                        </div>
+                    </div>
+                    
+                    <!-- User Controls -->
+                    <div class="flex flex-col items-center sm:items-start space-y-2">
+                        <!-- User Info -->
+                        <div class="bg-nasa-dark bg-opacity-50 px-3 py-2 rounded-lg border border-green-400 border-opacity-30">
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-user-astronaut text-green-400 text-sm" aria-hidden="true"></i>
+                                <div>
+                                    <p class="text-green-400 font-bold text-xs">{{ username or 'Researcher' }}</p>
+                                    <p class="text-gray-400 text-xs">Authenticated User</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Logout Button -->
+                        <a href="{{ url_for('logout') }}" 
+                           class="bg-nasa-dark bg-opacity-50 px-3 py-2 rounded-lg border border-nasa-red border-opacity-30 text-nasa-red hover:border-opacity-60 hover:bg-opacity-70 transition-all duration-300"
+                           aria-label="Logout from the system">
+                            <i class="fas fa-sign-out-alt mr-2 text-sm" aria-hidden="true"></i>
+                            <span class="text-sm font-bold">Logout</span>
+                        </a>
+                        
+                        <!-- Accessibility Controls -->
+                        <button id="high-contrast-toggle" 
+                                class="bg-nasa-dark bg-opacity-50 px-3 py-2 rounded-lg border border-nasa-blue border-opacity-30 text-blue-200 hover:border-nasa-red transition-all duration-300"
+                                aria-label="Toggle high contrast mode">
+                            <i class="fas fa-adjust mr-2 text-sm" aria-hidden="true"></i>
+                            <span class="text-sm font-bold">High Contrast</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="main-content" class="container mx-auto px-3 py-6" role="main">
+        <!-- Statistics Dashboard -->
+        <section id="stats-section" class="mb-8">
+            <div class="bg-gradient-to-br from-nasa-light via-nasa-dark to-nasa-light bg-opacity-60 backdrop-blur-lg rounded-xl p-4 border border-nasa-blue border-opacity-40 shadow-lg">
+                <!-- Section Header -->
+                <div class="text-center mb-4">
+                    <h2 class="text-xl font-bold text-white mb-2 flex items-center justify-center">
+                        <i class="fas fa-chart-line text-nasa-red mr-2 text-2xl"></i>
+                        <span class="bg-gradient-to-r from-white via-blue-200 to-white bg-clip-text text-transparent">
+                            Mission Analytics Dashboard
+                        </span>
+                    </h2>
+                    <p class="text-blue-200 text-sm">Real-time performance metrics and classification insights</p>
+                </div>
+                
+                <!-- Statistics Cards Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <!-- Accuracy Card -->
+                    <div class="group relative bg-gradient-to-br from-nasa-blue via-blue-700 to-blue-800 bg-opacity-40 rounded-lg p-4 border border-blue-400 border-opacity-40 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                        <div class="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-800 opacity-20 rounded-lg"></div>
+                        <div class="relative flex items-center justify-between">
+                            <div>
+                                <p class="text-blue-200 text-sm font-semibold uppercase tracking-wide mb-2">Model Accuracy</p>
+                                <p id="accuracy-value" class="text-4xl font-bold text-white mb-1">87%</p>
+                                <p class="text-blue-300 text-xs">Performance Score</p>
+                            </div>
+                            <div class="bg-blue-500 bg-opacity-30 p-4 rounded-xl">
+                                <i class="fas fa-bullseye text-3xl text-blue-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Total Samples Card -->
+                    <div class="group relative bg-gradient-to-br from-nasa-red via-red-700 to-red-800 bg-opacity-40 rounded-lg p-4 border border-red-400 border-opacity-40 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                        <div class="absolute inset-0 bg-gradient-to-br from-red-500 to-red-800 opacity-20 rounded-lg"></div>
+                        <div class="relative flex items-center justify-between">
+                            <div>
+                                <p class="text-red-200 text-sm font-semibold uppercase tracking-wide mb-2">Total Samples</p>
+                                <p id="total-samples" class="text-4xl font-bold text-white mb-1">2,400</p>
+                                <p class="text-red-300 text-xs">Exoplanet Records</p>
+                            </div>
+                            <div class="bg-red-500 bg-opacity-30 p-4 rounded-xl">
+                                <i class="fas fa-database text-3xl text-red-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Model Type Card -->
+                    <div class="group relative bg-gradient-to-br from-purple-600 via-purple-700 to-purple-800 bg-opacity-40 rounded-lg p-4 border border-purple-400 border-opacity-40 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                        <div class="absolute inset-0 bg-gradient-to-br from-purple-500 to-purple-800 opacity-20 rounded-lg"></div>
+                        <div class="relative flex items-center justify-between">
+                            <div>
+                                <p class="text-purple-200 text-sm font-semibold uppercase tracking-wide mb-2">Model Type</p>
+                                <p id="model-type" class="text-3xl font-bold text-white mb-1">XGBoost</p>
+                                <p class="text-purple-300 text-xs">ML Algorithm</p>
+                            </div>
+                            <div class="bg-purple-500 bg-opacity-30 p-4 rounded-xl">
+                                <i class="fas fa-brain text-3xl text-purple-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Features Card -->
+                    <div class="group relative bg-gradient-to-br from-green-600 via-green-700 to-green-800 bg-opacity-40 rounded-lg p-4 border border-green-400 border-opacity-40 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                        <div class="absolute inset-0 bg-gradient-to-br from-green-500 to-green-800 opacity-20 rounded-lg"></div>
+                        <div class="relative flex items-center justify-between">
+                            <div>
+                                <p class="text-green-200 text-sm font-semibold uppercase tracking-wide mb-2">Features</p>
+                                <p class="text-3xl font-bold text-white mb-1">3</p>
+                                <p class="text-green-300 text-xs">Input Parameters</p>
+                            </div>
+                            <div class="bg-green-500 bg-opacity-30 p-4 rounded-xl">
+                                <i class="fas fa-cogs text-3xl text-green-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Class Distribution Chart Section -->
+                <div class="bg-gradient-to-br from-nasa-dark via-nasa-light to-nasa-dark bg-opacity-70 rounded-2xl p-8 border-2 border-nasa-blue border-opacity-30">
+                    <div class="text-center mb-6">
+                        <h3 class="text-2xl font-bold text-white mb-2 flex items-center justify-center">
+                            <i class="fas fa-chart-pie text-nasa-red mr-3"></i>
+                            <span class="bg-gradient-to-r from-white via-blue-200 to-white bg-clip-text text-transparent">
+                                Classification Distribution
+                            </span>
+                        </h3>
+                        <p class="text-blue-200">Exoplanet class distribution across the dataset</p>
+                    </div>
+                    <div class="bg-nasa-dark bg-opacity-50 rounded-xl p-6 border border-nasa-blue border-opacity-20">
+                        <canvas id="class-distribution-chart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Interface Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            <!-- Manual Entry Section -->
+            <section class="group bg-gradient-to-br from-nasa-light via-nasa-dark to-nasa-light bg-opacity-60 backdrop-blur-lg rounded-2xl p-8 border-2 border-nasa-blue border-opacity-40 shadow-2xl hover:shadow-3xl transition-all duration-300">
+                <!-- Section Header -->
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-white mb-3 flex items-center justify-center">
+                        <i class="fas fa-keyboard text-nasa-red mr-4 text-4xl"></i>
+                        <span class="bg-gradient-to-r from-white via-blue-200 to-white bg-clip-text text-transparent">
+                            Manual Classification
+                        </span>
+                    </h2>
+                    <p class="text-blue-200 text-lg">Input individual exoplanet parameters for real-time analysis</p>
+                </div>
+                
+                <form id="manual-form" class="space-y-8">
+                    <!-- Input Fields Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Orbital Period -->
+                        <div class="group">
+                            <label for="pl_orbper" class="block text-sm font-semibold text-blue-200 mb-3 uppercase tracking-wide">
+                                <i class="fas fa-clock mr-2" aria-hidden="true"></i>Orbital Period
+                            </label>
+                            <div class="relative">
+                                <input type="number" id="pl_orbper" name="pl_orbper" step="0.001" min="0.001" required
+                                       class="w-full px-6 py-4 bg-nasa-dark border-2 border-nasa-blue border-opacity-40 rounded-xl text-white placeholder-gray-400 focus:border-nasa-red focus:ring-2 focus:ring-nasa-red focus:ring-opacity-60 transition-all duration-300 font-medium shadow-lg hover:border-opacity-60"
+                                       placeholder="e.g., 1.7575"
+                                       aria-describedby="pl_orbper-help"
+                                       aria-label="Orbital period in days">
+                                <div class="absolute right-4 top-4 text-gray-400" aria-hidden="true">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                            </div>
+                            <p id="pl_orbper-help" class="text-gray-400 text-xs mt-2 ml-1">Days - Time for one complete orbit around the star</p>
+                        </div>
+                        
+                        <!-- Transit Depth -->
+                        <div class="group">
+                            <label for="pl_trandep" class="block text-sm font-semibold text-blue-200 mb-3 uppercase tracking-wide">
+                                <i class="fas fa-chart-line mr-2" aria-hidden="true"></i>Transit Depth
+                            </label>
+                            <div class="relative">
+                                <input type="number" id="pl_trandep" name="pl_trandep" step="0.001" min="0" required
+                                       class="w-full px-6 py-4 bg-nasa-dark border-2 border-nasa-blue border-opacity-40 rounded-xl text-white placeholder-gray-400 focus:border-nasa-red focus:ring-2 focus:ring-nasa-red focus:ring-opacity-60 transition-all duration-300 font-medium shadow-lg hover:border-opacity-60"
+                                       placeholder="e.g., 0.0744"
+                                       aria-describedby="pl_trandep-help"
+                                       aria-label="Transit depth in parts per million">
+                                <div class="absolute right-4 top-4 text-gray-400" aria-hidden="true">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                            </div>
+                            <p id="pl_trandep-help" class="text-gray-400 text-xs mt-2 ml-1">Parts per Million - Fractional decrease in stellar brightness during transit</p>
+                        </div>
+                        
+                        <!-- Stellar Temperature -->
+                        <div class="group">
+                            <label for="st_teff" class="block text-sm font-semibold text-blue-200 mb-3 uppercase tracking-wide">
+                                <i class="fas fa-thermometer-half mr-2" aria-hidden="true"></i>Stellar Temperature
+                            </label>
+                            <div class="relative">
+                                <input type="number" id="st_teff" name="st_teff" step="1" min="1000" required
+                                       class="w-full px-6 py-4 bg-nasa-dark border-2 border-nasa-blue border-opacity-40 rounded-xl text-white placeholder-gray-400 focus:border-nasa-red focus:ring-2 focus:ring-nasa-red focus:ring-opacity-60 transition-all duration-300 font-medium shadow-lg hover:border-opacity-60"
+                                       placeholder="e.g., 4759"
+                                       aria-describedby="st_teff-help"
+                                       aria-label="Stellar effective temperature in Kelvin">
+                                <div class="absolute right-4 top-4 text-gray-400" aria-hidden="true">
+                                    <i class="fas fa-thermometer-half"></i>
+                                </div>
+                            </div>
+                            <p id="st_teff-help" class="text-gray-400 text-xs mt-2 ml-1">Kelvin - Effective temperature of the host star</p>
+                        </div>
+                    </div>
+                    
+                    <!-- TESS-specific fields (hidden by default) -->
+                    <div id="tess-fields" class="grid grid-cols-1 md:grid-cols-3 gap-6" style="display: none;">
+                        <!-- Transit Duration -->
+                        <div class="group">
+                            <label for="pl_trandurh" class="block text-sm font-semibold text-blue-200 mb-3 uppercase tracking-wide">
+                                <i class="fas fa-hourglass-half mr-2" aria-hidden="true"></i>Transit Duration
+                            </label>
+                            <div class="relative">
+                                <input type="number" id="pl_trandurh" name="pl_trandurh" step="0.1" min="0.1" value="2.5" required
+                                       class="w-full px-6 py-4 bg-nasa-dark border-2 border-nasa-blue border-opacity-40 rounded-xl text-white placeholder-gray-400 focus:border-nasa-red focus:ring-2 focus:ring-nasa-red focus:ring-opacity-60 transition-all duration-300 font-medium shadow-lg hover:border-opacity-60"
+                                       placeholder="e.g., 2.5"
+                                       aria-describedby="pl_trandurh-help"
+                                       aria-label="Transit duration in hours">
+                                <div class="absolute right-4 top-4 text-gray-400" aria-hidden="true">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                            </div>
+                            <p id="pl_trandurh-help" class="text-gray-400 text-xs mt-2 ml-1">Hours - Duration of transit</p>
+                        </div>
+                        
+                        <!-- Proper Motion RA Limit -->
+                        <div class="group">
+                            <label for="st_pmralim" class="block text-sm font-semibold text-blue-200 mb-3 uppercase tracking-wide">
+                                <i class="fas fa-arrows-alt-h mr-2" aria-hidden="true"></i>PM RA Limit
+                            </label>
+                            <div class="relative">
+                                <select id="st_pmralim" name="st_pmralim" required
+                                        class="w-full px-6 py-4 bg-nasa-dark border-2 border-nasa-blue border-opacity-40 rounded-xl text-white focus:border-nasa-red focus:ring-2 focus:ring-nasa-red focus:ring-opacity-60 transition-all duration-300 font-medium shadow-lg hover:border-opacity-60"
+                                        aria-describedby="st_pmralim-help"
+                                        aria-label="Proper motion RA limit">
+                                    <option value="">Select...</option>
+                                    <option value="0" selected>0</option>
+                                    <option value="1">1</option>
+                                </select>
+                                <div class="absolute right-4 top-4 text-gray-400" aria-hidden="true">
+                                    <i class="fas fa-compass"></i>
+                                </div>
+                            </div>
+                            <p id="st_pmralim-help" class="text-gray-400 text-xs mt-2 ml-1">0 or 1 - Proper motion RA limit</p>
+                        </div>
+                        
+                        <!-- Proper Motion DEC Limit -->
+                        <div class="group">
+                            <label for="st_pmdeclim" class="block text-sm font-semibold text-blue-200 mb-3 uppercase tracking-wide">
+                                <i class="fas fa-arrows-alt-v mr-2" aria-hidden="true"></i>PM DEC Limit
+                            </label>
+                            <div class="relative">
+                                <select id="st_pmdeclim" name="st_pmdeclim" required
+                                        class="w-full px-6 py-4 bg-nasa-dark border-2 border-nasa-blue border-opacity-40 rounded-xl text-white focus:border-nasa-red focus:ring-2 focus:ring-nasa-red focus:ring-opacity-60 transition-all duration-300 font-medium shadow-lg hover:border-opacity-60"
+                                        aria-describedby="st_pmdeclim-help"
+                                        aria-label="Proper motion DEC limit">
+                                    <option value="">Select...</option>
+                                    <option value="0" selected>0</option>
+                                    <option value="1">1</option>
+                                </select>
+                                <div class="absolute right-4 top-4 text-gray-400" aria-hidden="true">
+                                    <i class="fas fa-compass"></i>
+                                </div>
+                            </div>
+                            <p id="st_pmdeclim-help" class="text-gray-400 text-xs mt-2 ml-1">0 or 1 - Proper motion DEC limit</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="text-center">
+                        <button type="submit" id="predict-btn"
+                                class="group relative bg-gradient-to-r from-nasa-red via-red-600 to-red-700 hover:from-red-600 hover:to-red-800 text-white font-bold py-5 px-12 rounded-2xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-nasa-red focus:ring-opacity-60 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl hover:shadow-3xl"
+                                aria-describedby="predict-btn-help">
+                            <div class="flex items-center justify-center space-x-3">
+                                <i class="fas fa-rocket text-xl group-hover:animate-pulse" aria-hidden="true"></i>
+                                <span id="predict-btn-text" class="text-lg uppercase tracking-wide">Launch Classification</span>
+                                <i id="predict-spinner" class="fas fa-spinner fa-spin text-xl hidden" aria-hidden="true"></i>
+                            </div>
+                            <div class="absolute inset-0 bg-gradient-to-r from-nasa-red to-red-600 opacity-0 group-hover:opacity-20 rounded-2xl transition-opacity duration-300"></div>
+                        </button>
+                        <p id="predict-btn-help" class="text-gray-400 text-sm mt-2">Analyze the exoplanet parameters and predict its classification</p>
+                    </div>
+                </form>
+                
+                <!-- Manual Prediction Results -->
+                <div id="manual-results" class="mt-8 hidden">
+                    <div class="bg-gradient-to-br from-green-600 via-green-700 to-green-800 bg-opacity-30 rounded-2xl p-8 border-2 border-green-400 border-opacity-50 shadow-2xl">
+                        <div class="text-center mb-6">
+                            <h3 class="text-2xl font-bold text-white mb-2 flex items-center justify-center">
+                                <i class="fas fa-check-circle text-green-400 mr-3"></i>
+                                <span class="bg-gradient-to-r from-white via-green-200 to-white bg-clip-text text-transparent">
+                                    Classification Complete
+                                </span>
+                            </h3>
+                            <p class="text-green-200">Exoplanet analysis results</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div class="bg-nasa-dark bg-opacity-50 rounded-xl p-6 text-center">
+                                <p class="text-green-200 text-sm font-semibold uppercase tracking-wide mb-2">Predicted Class</p>
+                                <p id="prediction-class" class="text-4xl font-bold text-white mb-2"></p>
+                                <p class="text-green-300 text-xs">Exoplanet Type</p>
+                            </div>
+                            <div class="bg-nasa-dark bg-opacity-50 rounded-xl p-6 text-center">
+                                <p class="text-green-200 text-sm font-semibold uppercase tracking-wide mb-2">Confidence Level</p>
+                                <p id="prediction-confidence" class="text-4xl font-bold text-green-400 mb-2"></p>
+                                <p class="text-green-300 text-xs">Accuracy Score</p>
+                            </div>
+                        </div>
+                        
+                        <div id="prediction-details" class="bg-nasa-dark bg-opacity-30 rounded-xl p-4 text-green-200 text-sm"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bulk Upload Section -->
+            <section class="group bg-gradient-to-br from-nasa-light via-nasa-dark to-nasa-light bg-opacity-60 backdrop-blur-lg rounded-2xl p-8 border-2 border-nasa-blue border-opacity-40 shadow-2xl hover:shadow-3xl transition-all duration-300">
+                <!-- Section Header -->
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-white mb-3 flex items-center justify-center">
+                        <i class="fas fa-file-csv text-nasa-red mr-4 text-4xl"></i>
+                        <span class="bg-gradient-to-r from-white via-blue-200 to-white bg-clip-text text-transparent">
+                            Batch Processing
+                        </span>
+                    </h2>
+                    <p class="text-blue-200 text-lg">Upload CSV files for bulk exoplanet classification</p>
+                </div>
+                
+                <form id="upload-form" class="space-y-8">
+                    <!-- File Upload Area -->
+                    <div id="drop-zone" class="group border-2 border-dashed border-nasa-blue border-opacity-50 rounded-2xl p-12 text-center hover:border-nasa-red transition-all duration-300 cursor-pointer bg-nasa-dark bg-opacity-30 hover:bg-opacity-50">
+                        <div class="flex flex-col items-center space-y-4">
+                            <div class="bg-nasa-blue bg-opacity-20 p-6 rounded-full group-hover:bg-nasa-red group-hover:bg-opacity-20 transition-colors duration-300">
+                                <i class="fas fa-cloud-upload-alt text-5xl text-nasa-blue group-hover:text-nasa-red transition-colors duration-300"></i>
+                            </div>
+                            <div>
+                                <p class="text-blue-200 text-lg font-semibold mb-2">Drag & Drop CSV File</p>
+                                <p class="text-gray-400 text-sm mb-6">or click to browse your files</p>
+                                <input type="file" id="csv-file" accept=".csv" class="hidden">
+                                <button type="button" id="browse-btn" class="bg-gradient-to-r from-nasa-red to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold px-8 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+                                    <i class="fas fa-folder-open mr-2"></i>
+                                    Browse Files
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Template Download -->
+                    <div class="bg-gradient-to-r from-green-900 to-green-800 bg-opacity-50 rounded-xl p-6 border-2 border-green-400 border-opacity-40 shadow-lg">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <div class="bg-green-500 bg-opacity-20 p-3 rounded-full">
+                                    <i class="fas fa-download text-green-400 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-green-200 mb-1">📋 CSV Template Required</h3>
+                                    <p class="text-sm text-green-300">Download the correct format for your selected dataset</p>
+                                    <p class="text-xs text-gray-300 mt-1">⚠️ Raw dataset files won't work - use the template format</p>
+                                </div>
+                            </div>
+                            <a href="/download-template" id="template-download-link"
+                               class="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold px-6 py-3 rounded-xl text-sm transition-all duration-200 transform hover:scale-105 shadow-lg">
+                                <i class="fas fa-download mr-2"></i>
+                                <span id="template-download-text">Download Template</span>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Retrain Checkbox -->
+                    <div class="bg-nasa-dark bg-opacity-50 rounded-xl p-6 border border-nasa-blue border-opacity-30">
+                        <div class="flex items-center space-x-4">
+                            <input type="checkbox" id="retrain-checkbox" name="retrain"
+                                   class="w-5 h-5 text-nasa-red bg-nasa-dark border-2 border-nasa-blue border-opacity-40 rounded focus:ring-nasa-red focus:ring-2">
+                            <label for="retrain-checkbox" class="text-blue-200 text-sm font-medium">
+                                <i class="fas fa-sync-alt mr-2"></i>
+                                Retrain model with uploaded data
+                            </label>
+                        </div>
+                        <p class="text-gray-400 text-xs mt-2 ml-9">This will update the model with new training data</p>
+                    </div>
+                    
+                    <!-- Upload Button -->
+                    <div class="text-center">
+                        <button type="submit" id="upload-btn" disabled
+                                class="group relative bg-gradient-to-r from-nasa-blue via-blue-600 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-bold py-5 px-12 rounded-2xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-nasa-blue focus:ring-opacity-60 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl hover:shadow-3xl disabled:hover:scale-100">
+                            <div class="flex items-center justify-center space-x-3">
+                                <i class="fas fa-upload text-xl group-hover:animate-pulse"></i>
+                                <span id="upload-btn-text" class="text-lg uppercase tracking-wide">Launch Batch Processing</span>
+                                <i id="upload-spinner" class="fas fa-spinner fa-spin text-xl hidden"></i>
+                            </div>
+                            <div class="absolute inset-0 bg-gradient-to-r from-nasa-blue to-blue-600 opacity-0 group-hover:opacity-20 rounded-2xl transition-opacity duration-300"></div>
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Upload Results -->
+                <div id="upload-results" class="mt-8 hidden">
+                    <div class="bg-gradient-to-br from-nasa-blue via-blue-700 to-blue-800 bg-opacity-30 rounded-2xl p-8 border-2 border-blue-400 border-opacity-50 shadow-2xl">
+                        <div class="text-center mb-6">
+                            <h3 class="text-2xl font-bold text-white mb-2 flex items-center justify-center">
+                                <i class="fas fa-chart-bar text-blue-400 mr-3"></i>
+                                <span class="bg-gradient-to-r from-white via-blue-200 to-white bg-clip-text text-transparent">
+                                    Batch Processing Complete
+                                </span>
+                            </h3>
+                            <p class="text-blue-200">Classification results for uploaded dataset</p>
+                        </div>
+                        
+                        <div id="upload-summary" class="bg-nasa-dark bg-opacity-50 rounded-xl p-6 mb-6 text-blue-200"></div>
+                        
+                        <div id="upload-table-container" class="max-h-80 overflow-y-auto bg-nasa-dark bg-opacity-30 rounded-xl border border-nasa-blue border-opacity-20">
+                            <table id="upload-results-table" class="w-full text-sm">
+                                <thead class="bg-nasa-dark bg-opacity-70 sticky top-0">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-blue-200 font-semibold uppercase tracking-wide">Row</th>
+                                        <th class="px-4 py-3 text-left text-blue-200 font-semibold uppercase tracking-wide">Prediction</th>
+                                        <th class="px-4 py-3 text-left text-blue-200 font-semibold uppercase tracking-wide">Confidence</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="upload-results-body" class="text-white">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Hyperparameter Tuning Section -->
+        <section class="mt-12 bg-gradient-to-br from-nasa-light via-nasa-dark to-nasa-light bg-opacity-60 backdrop-blur-lg rounded-2xl p-8 border-2 border-nasa-blue border-opacity-40 shadow-2xl">
+            <!-- Section Header -->
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-white mb-3 flex items-center justify-center">
+                    <i class="fas fa-cogs text-nasa-red mr-4 text-4xl"></i>
+                    <span class="bg-gradient-to-r from-white via-blue-200 to-white bg-clip-text text-transparent">
+                        Model Optimization
+                    </span>
+                </h2>
+                <p class="text-blue-200 text-lg">Fine-tune hyperparameters for enhanced classification performance</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Parameter Controls -->
+                <div>
+                    <form id="retrain-form" class="space-y-6">
+                        <!-- N Estimators -->
+                        <div>
+                            <label for="n_estimators" class="block text-sm font-medium text-blue-200 mb-2">
+                                Number of Estimators: <span id="n_estimators_value" class="text-nasa-red font-bold">300</span>
+                            </label>
+                            <input type="range" id="n_estimators" name="n_estimators" min="200" max="400" value="300"
+                                   class="w-full h-2 bg-nasa-dark rounded-lg appearance-none cursor-pointer slider">
+                        </div>
+                        
+                        <!-- Max Depth -->
+                        <div>
+                            <label for="max_depth" class="block text-sm font-medium text-blue-200 mb-2">
+                                Max Depth: <span id="max_depth_value" class="text-nasa-red font-bold">10</span>
+                            </label>
+                            <input type="range" id="max_depth" name="max_depth" min="7" max="12" value="10"
+                                   class="w-full h-2 bg-nasa-dark rounded-lg appearance-none cursor-pointer slider">
+                        </div>
+                        
+                        <!-- Learning Rate -->
+                        <div>
+                            <label for="learning_rate" class="block text-sm font-medium text-blue-200 mb-2">
+                                Learning Rate: <span id="learning_rate_value" class="text-nasa-red font-bold">0.20</span>
+                            </label>
+                            <input type="range" id="learning_rate" name="learning_rate" min="0.1" max="0.3" step="0.01" value="0.2"
+                                   class="w-full h-2 bg-nasa-dark rounded-lg appearance-none cursor-pointer slider">
+                        </div>
+                        
+                        <button type="submit" id="retrain-btn"
+                                class="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold py-4 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i class="fas fa-sync-alt mr-2"></i>
+                            <span id="retrain-btn-text">Retrain Model</span>
+                            <i id="retrain-spinner" class="fas fa-spinner fa-spin ml-2 hidden"></i>
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Retraining Results -->
+                <div>
+                    <div id="retrain-results" class="hidden">
+                        <div class="bg-gradient-to-r from-purple-600 to-purple-800 bg-opacity-20 rounded-lg p-6 border border-purple-400 border-opacity-30">
+                            <h3 class="text-xl font-bold text-white mb-4">Retraining Results</h3>
+                            <div id="retrain-details" class="space-y-2 text-purple-200">
+                                <!-- Retraining details will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="no-retrain" class="text-center py-12">
+                        <i class="fas fa-brain text-6xl text-gray-500 mb-4"></i>
+                        <p class="text-gray-400">Adjust hyperparameters and retrain the model</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Live region for screen reader announcements -->
+    <div id="live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+    
+    <!-- Footer -->
+    <footer class="bg-gradient-to-r from-nasa-dark via-nasa-light to-nasa-dark bg-opacity-90 backdrop-blur-md border-t-2 border-nasa-blue border-opacity-40 mt-20 shadow-2xl" role="contentinfo">
+        <div class="container mx-auto px-6 py-12">
+            <div class="flex flex-col lg:flex-row items-center justify-between">
+                <!-- Logo and Branding -->
+                <div class="flex items-center space-x-6 mb-8 lg:mb-0">
+                    <div class="relative">
+                        <div class="bg-gradient-to-br from-nasa-red to-red-600 p-4 rounded-2xl shadow-lg">
+                            <i class="fas fa-rocket text-3xl text-white"></i>
+                        </div>
+                        <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full animate-pulse shadow-lg"></div>
+                    </div>
+                    <div class="text-center lg:text-left">
+                        <p class="text-white font-bold text-xl mb-1">
+                            <span class="bg-gradient-to-r from-white via-blue-200 to-white bg-clip-text text-transparent">
+                                NASA Space Apps Challenge 2025
+                            </span>
+                        </p>
+                        <p class="text-blue-200 font-medium">Exoplanet Classification System</p>
+                        <p class="text-gray-300 text-sm mt-1">Advanced Machine Learning for Space Discovery</p>
+                    </div>
+                </div>
+                
+                <!-- Team and Technology Info -->
+                <div class="text-center lg:text-right">
+                    <div class="bg-nasa-dark bg-opacity-50 rounded-xl p-6 border border-nasa-blue border-opacity-30">
+                        <p class="text-gray-300 text-sm font-semibold mb-2 uppercase tracking-wide">Developed by</p>
+                        <p class="text-nasa-red font-bold text-lg mb-3">Team syntax_in_orbit</p>
+                        <div class="flex flex-wrap justify-center lg:justify-end gap-4 text-xs text-gray-400">
+                            <span class="bg-nasa-blue bg-opacity-20 px-3 py-1 rounded-full border border-nasa-blue border-opacity-30">
+                                <i class="fas fa-server mr-1"></i>Flask 3.0.3
+                            </span>
+                            <span class="bg-purple-600 bg-opacity-20 px-3 py-1 rounded-full border border-purple-400 border-opacity-30">
+                                <i class="fas fa-brain mr-1"></i>XGBoost 3.0.5
+                            </span>
+                            <span class="bg-blue-600 bg-opacity-20 px-3 py-1 rounded-full border border-blue-400 border-opacity-30">
+                                <i class="fas fa-palette mr-1"></i>Tailwind CSS
+                            </span>
+                            <span class="bg-green-600 bg-opacity-20 px-3 py-1 rounded-full border border-green-400 border-opacity-30">
+                                <i class="fas fa-chart-line mr-1"></i>Chart.js
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bottom Bar -->
+            <div class="border-t border-nasa-blue border-opacity-30 mt-8 pt-6">
+                <div class="flex flex-col md:flex-row items-center justify-between text-center md:text-left">
+                    <p class="text-gray-400 text-sm mb-2 md:mb-0">
+                        © 2025 NASA Space Apps Challenge. Built for educational and research purposes.
+                    </p>
+                    <div class="flex items-center space-x-4 text-gray-400 text-sm">
+                        <span class="flex items-center">
+                            <i class="fas fa-globe mr-2"></i>Exploring the cosmos through technology
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden z-50">
+        <div class="flex items-center justify-center h-full">
+            <div class="bg-nasa-light bg-opacity-90 rounded-lg p-8 text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-nasa-red mx-auto mb-4"></div>
+                <p class="text-white text-lg">Processing...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2">
+        <!-- Toast notifications will be dynamically inserted here -->
+    </div>
+
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

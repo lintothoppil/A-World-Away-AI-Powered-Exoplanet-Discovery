@@ -1,0 +1,30 @@
+# NASA Exoplanet Classification System - Dependencies
+# Python 3.8+ required
+
+# Core Flask Framework
+Flask==3.0.3
+Flask-CORS==4.0.0
+
+# Data Processing and Analysis
+pandas==2.1.4
+numpy==1.24.3
+
+# Machine Learning
+scikit-learn==1.3.2
+xgboost==2.0.3
+
+# Data Serialization
+joblib==1.3.2
+
+# Web Framework Utilities
+Werkzeug==3.0.1
+
+# Development and Testing (optional)
+pytest==7.4.3
+pytest-flask==1.3.0
+
+# Production Server (optional)
+gunicorn==21.2.0
+
+# Additional utilities
+python-dotenv==1.0.0

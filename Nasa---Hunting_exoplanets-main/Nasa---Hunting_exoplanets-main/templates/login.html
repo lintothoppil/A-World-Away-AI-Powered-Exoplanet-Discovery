@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NASA Exoplanet Classification System - Login</title>
+    <meta name="description" content="Secure researcher login for NASA Exoplanet Classification System">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'nasa-blue': '#0B3D91',
+                        'nasa-red': '#FC3D21',
+                        'nasa-dark': '#1a1a2e',
+                        'nasa-light': '#16213e'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    
+    <!-- Meta tags for SEO -->
+    <meta property="og:title" content="NASA Exoplanet Classification System - Login">
+    <meta property="og:description" content="Secure researcher access to NASA Exoplanet Classification System">
+    <meta name="author" content="NASA Space Apps Challenge Team">
+</head>
+<body class="bg-gradient-to-br from-nasa-dark via-nasa-light to-gray-900 min-h-screen text-white flex items-center justify-center">
+    <!-- Background Animation -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-40 -right-40 w-80 h-80 bg-nasa-blue bg-opacity-20 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-nasa-red bg-opacity-20 rounded-full blur-3xl animate-pulse" style="animation-delay: 2s;"></div>
+    </div>
+
+    <!-- Main Login Container -->
+    <div class="relative z-10 w-full max-w-md mx-4">
+        <!-- Login Card -->
+        <div class="bg-gradient-to-br from-nasa-light via-nasa-dark to-nasa-light bg-opacity-90 backdrop-blur-lg rounded-3xl p-8 border-2 border-nasa-blue border-opacity-40 shadow-2xl">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <!-- NASA Logo -->
+                <div class="relative mx-auto mb-6 w-20 h-20">
+                    <div class="bg-gradient-to-br from-nasa-red to-red-600 p-4 rounded-2xl shadow-lg transform rotate-3 hover:rotate-0 transition-transform duration-300">
+                        <i class="fas fa-rocket text-3xl text-white"></i>
+                    </div>
+                    <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full animate-pulse shadow-lg"></div>
+                </div>
+                
+                <h1 class="text-3xl font-bold text-white mb-2">
+                    <span class="bg-gradient-to-r from-white via-blue-200 to-white bg-clip-text text-transparent">
+                        NASA Exoplanet Classifier
+                    </span>
+                </h1>
+                <p class="text-blue-200 text-sm">Researcher Access Portal</p>
+                <p class="text-gray-400 text-xs mt-1">Space Apps Challenge 2025</p>
+            </div>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="mb-6 space-y-2">
+                        {% for category, message in messages %}
+                            <div class="p-4 rounded-xl border-2 {% if category == 'error' %}bg-red-900 bg-opacity-50 border-red-400 text-red-200{% elif category == 'success' %}bg-green-900 bg-opacity-50 border-green-400 text-green-200{% else %}bg-blue-900 bg-opacity-50 border-blue-400 text-blue-200{% endif %}">
+                                <div class="flex items-center">
+                                    <i class="fas {% if category == 'error' %}fa-exclamation-circle{% elif category == 'success' %}fa-check-circle{% else %}fa-info-circle{% endif %} mr-3"></i>
+                                    <span class="text-sm font-medium">{{ message }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <!-- Login Form -->
+            <form method="POST" class="space-y-6" id="login-form">
+                <!-- Username Field -->
+                <div class="space-y-2">
+                    <label for="username" class="block text-sm font-semibold text-blue-200 uppercase tracking-wide">
+                        <i class="fas fa-user mr-2" aria-hidden="true"></i>Username
+                    </label>
+                    <div class="relative">
+                        <input type="text" 
+                               id="username" 
+                               name="username" 
+                               required
+                               maxlength="50"
+                               class="w-full px-6 py-4 bg-nasa-dark border-2 border-nasa-blue border-opacity-40 rounded-xl text-white placeholder-gray-400 focus:border-nasa-red focus:ring-2 focus:ring-nasa-red focus:ring-opacity-60 transition-all duration-300 font-medium shadow-lg hover:border-opacity-60"
+                               placeholder="Enter your username"
+                               aria-describedby="username-help"
+                               autocomplete="username">
+                        <div class="absolute right-4 top-4 text-gray-400" aria-hidden="true">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </div>
+                    <p id="username-help" class="text-gray-400 text-xs">Enter your researcher username</p>
+                </div>
+
+                <!-- Password Field -->
+                <div class="space-y-2">
+                    <label for="password" class="block text-sm font-semibold text-blue-200 uppercase tracking-wide">
+                        <i class="fas fa-lock mr-2" aria-hidden="true"></i>Password
+                    </label>
+                    <div class="relative">
+                        <input type="password" 
+                               id="password" 
+                               name="password" 
+                               required
+                               maxlength="100"
+                               class="w-full px-6 py-4 bg-nasa-dark border-2 border-nasa-blue border-opacity-40 rounded-xl text-white placeholder-gray-400 focus:border-nasa-red focus:ring-2 focus:ring-nasa-red focus:ring-opacity-60 transition-all duration-300 font-medium shadow-lg hover:border-opacity-60"
+                               placeholder="Enter your password"
+                               aria-describedby="password-help"
+                               autocomplete="current-password">
+                        <div class="absolute right-4 top-4 text-gray-400" aria-hidden="true">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <button type="button" 
+                                id="toggle-password"
+                                class="absolute right-12 top-4 text-gray-400 hover:text-white transition-colors duration-200"
+                                aria-label="Toggle password visibility">
+                            <i class="fas fa-eye" id="password-icon"></i>
+                        </button>
+                    </div>
+                    <p id="password-help" class="text-gray-400 text-xs">Enter your secure password</p>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-4">
+                    <button type="submit" 
+                            id="login-btn"
+                            class="w-full bg-gradient-to-r from-nasa-red via-red-600 to-red-700 hover:from-red-600 hover:to-red-800 text-white font-bold py-5 px-6 rounded-2xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-nasa-red focus:ring-opacity-60 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl hover:shadow-3xl">
+                        <div class="flex items-center justify-center space-x-3">
+                            <i class="fas fa-sign-in-alt text-xl" id="login-icon"></i>
+                            <span id="login-btn-text" class="text-lg uppercase tracking-wide">Launch Access</span>
+                            <i id="login-spinner" class="fas fa-spinner fa-spin text-xl hidden" aria-hidden="true"></i>
+                        </div>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Security Notice -->
+            <div class="mt-8 p-4 bg-nasa-dark bg-opacity-50 rounded-xl border border-nasa-blue border-opacity-30">
+                <div class="flex items-start space-x-3">
+                    <i class="fas fa-shield-alt text-nasa-red mt-1" aria-hidden="true"></i>
+                    <div>
+                        <h3 class="text-sm font-semibold text-blue-200 mb-1">Security Notice</h3>
+                        <p class="text-xs text-gray-400">This system is for authorized researchers only. All activities are logged and monitored.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Demo Credentials -->
+            <div class="mt-6 p-4 bg-gradient-to-r from-blue-900 to-nasa-blue bg-opacity-30 rounded-xl border border-blue-400 border-opacity-30">
+                <div class="flex items-start space-x-3">
+                    <i class="fas fa-info-circle text-blue-400 mt-1" aria-hidden="true"></i>
+                    <div>
+                        <h3 class="text-sm font-semibold text-blue-200 mb-2">Demo Access</h3>
+                        <div class="text-xs text-blue-300 space-y-1">
+                            <p><strong>Username:</strong> user</p>
+                            <p><strong>Password:</strong> 123</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-8">
+            <p class="text-gray-400 text-sm">
+                © 2025 NASA Space Apps Challenge
+            </p>
+            <p class="text-gray-500 text-xs mt-1">
+                Advanced Machine Learning for Space Discovery
+            </p>
+        </div>
+    </div>
+
+    <!-- Custom JavaScript -->
+    <script>
+        // Password visibility toggle
+        document.getElementById('toggle-password').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const passwordIcon = document.getElementById('password-icon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                passwordIcon.classList.remove('fa-eye');
+                passwordIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                passwordIcon.classList.remove('fa-eye-slash');
+                passwordIcon.classList.add('fa-eye');
+            }
+        });
+
+        // Form submission handling
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            const submitBtn = document.getElementById('login-btn');
+            const btnText = document.getElementById('login-btn-text');
+            const btnIcon = document.getElementById('login-icon');
+            const spinner = document.getElementById('login-spinner');
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            btnText.textContent = 'Authenticating...';
+            btnIcon.classList.add('hidden');
+            spinner.classList.remove('hidden');
+            
+            // Add loading animation
+            submitBtn.classList.add('opacity-75');
+        });
+
+        // Input validation
+        document.getElementById('username').addEventListener('input', function() {
+            const value = this.value.trim();
+            if (value.length > 0 && value.length < 3) {
+                this.classList.add('border-yellow-400');
+            } else {
+                this.classList.remove('border-yellow-400');
+            }
+        });
+
+        document.getElementById('password').addEventListener('input', function() {
+            const value = this.value;
+            if (value.length > 0 && value.length < 3) {
+                this.classList.add('border-yellow-400');
+            } else {
+                this.classList.remove('border-yellow-400');
+            }
+        });
+
+        // Auto-focus on username field
+        document.getElementById('username').focus();
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Enter key on password field submits form
+            if (e.key === 'Enter' && document.activeElement.id === 'password') {
+                document.getElementById('login-form').submit();
+            }
+        });
+
+        // Accessibility announcements
+        function announceToScreenReader(message) {
+            const announcement = document.createElement('div');
+            announcement.setAttribute('aria-live', 'polite');
+            announcement.setAttribute('aria-atomic', 'true');
+            announcement.className = 'sr-only';
+            announcement.textContent = message;
+            document.body.appendChild(announcement);
+            
+            setTimeout(() => {
+                document.body.removeChild(announcement);
+            }, 1000);
+        }
+
+        // Announce page load
+        announceToScreenReader('NASA Exoplanet Classification System login page loaded');
+    </script>
+</body>
+</html>
